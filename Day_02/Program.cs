@@ -26,7 +26,7 @@ namespace Day_02
         {
             public PasswordPolicy(string line)
             {
-                var match = PasswordPolicy.pattern.Match(line);
+                var match = pattern.Match(line);
                 LowerBound = int.Parse(match.Groups[1].Value);
                 HigherBound = int.Parse(match.Groups[2].Value);
                 Letter = char.Parse(match.Groups[3].Value);
