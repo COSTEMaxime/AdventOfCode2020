@@ -13,15 +13,22 @@ namespace Day_12
         {
             string[] content = System.IO.File.ReadAllLines(@"input.txt");
 
-
             Console.WriteLine("Puzzle 1 : " + Puzzle1(content));
-            //Console.WriteLine("Puzzle 2 : " + Puzzle2(content));
+            Console.WriteLine("Puzzle 2 : " + Puzzle2(content));
+        }
+
+        enum Direction
+        {
+            UP = 0,
+            RIGHT,
+            DOWN,
+            LEFT
         }
 
         static int Puzzle1(string[] input)
         {
             // start facing east
-            Vector orientation = new Vector(1, 0);
+            Direction direction = Direction.RIGHT;
             Vector position = new Vector(0, 0);
             foreach (var line in input)
             {
@@ -43,14 +50,27 @@ namespace Day_12
                         position.X -= value;
                         break;
                     case 'L':
-                        orientation = getOrientationVectorLeft(orientation, value);
+                        direction = getNewDirectionLeft(direction, value);
                         break;
                     case 'R':
-                        orientation = getOrientationVectorRight(orientation, value);
+                        direction = getNewDirectionRight(direction, value);
                         break;
                     case 'F':
-                        position.X += orientation.X * value;
-                        position.Y += orientation.Y * value;
+                        switch (direction)
+                        {
+                            case Direction.RIGHT:
+                                position.X += value;
+                                break;
+                            case Direction.DOWN:
+                                position.Y += value;
+                                break;
+                            case Direction.LEFT:
+                                position.X -= value;
+                                break;
+                            case Direction.UP:
+                                position.Y -= value;
+                                break;
+                        }
                         break;
                 }
             }
@@ -58,55 +78,70 @@ namespace Day_12
             return (int)(Math.Abs(position.X) + (int)Math.Abs(position.Y));
         }
 
-        private static Vector getOrientationVectorLeft(Vector orientation, int value)
+        private static Direction getNewDirectionLeft(Direction direction, int value)
         {
-            var newOrientation = new Vector(orientation.X, orientation.Y);
-            for (int i = 0; i < (value / 90); i++)
-            {
-                newOrientation = new Vector(-newOrientation.Y, -newOrientation.X);
-            }
-
-            return newOrientation;
+            return (Direction)((((int)direction - (value / 90)) % 4 + 4) % 4);
         }
 
-        private static Vector getOrientationVectorRight(Vector orientation, int value)
+        private static Direction getNewDirectionRight(Direction direction, int value)
         {
-            var newOrientation = new Vector(orientation.X, orientation.Y);
-            for (int i = 0; i < (value / 90); i++)
-            {
-                newOrientation = new Vector(newOrientation.Y, -newOrientation.X);
-            }
-
-            return newOrientation;
-
-            //int offset = (value / 90) % 4;
-            //if (offset % 2 == 0 && newOrientation.X != 0)
-            //{
-            //    newOrientation.X = -newOrientation.X;
-            //}
-
-            //if ((offset + 1) % 2 == 0 && newOrientation.Y == 0)
-            //{
-            //    newOrientation.Y = newOrientation.X;
-            //}
-
-            //for (int i = 0; i < offset; i++)
-            //{
-            //    int tempX = (int)newOrientation.X;
-            //    if (newOrientation.X == 0) { newOrientation.X = newOrientation.Y; }
-            //    else { newOrientation.X = 0; }
-
-            //    if (newOrientation.Y == 0) { newOrientation.Y = tempX; }
-            //    else { newOrientation.Y = 0; }
-            //}
+            return (Direction)(((int)direction + (value / 90)) % 4);
         }
 
-        //static int Puzzle2(SeatLayoutSolver solver)
-        //{
-        //    solver.Reset();
-        //    solver.Puzzle2Setup();
-        //    solver.Solve();
-        //    return solver.GetOccupiedSeatsCount();
-        //}
+        static int Puzzle2(string[] input)
+        {
+            Vector position = new Vector(0, 0);
+            Vector waypoint = new Vector(10, -1);
+            foreach (var line in input)
+            {
+                char action = line[0];
+                int value = int.Parse(line.Substring(1));
+
+                switch (action)
+                {
+                    case 'N':
+                        waypoint.Y -= value;
+                        break;
+                    case 'S':
+                        waypoint.Y += value;
+                        break;
+                    case 'E':
+                        waypoint.X += value;
+                        break;
+                    case 'W':
+                        waypoint.X -= value;
+                        break;
+                    case 'L':
+                        waypoint = rotateVectorLeft(waypoint, value);
+                        break;
+                    case 'R':
+                        waypoint = rotateVectorAntiClockwise(waypoint, value);
+                        break;
+                    case 'F':
+                        position += value * waypoint;
+                        break;
+                }
+
+                Console.WriteLine(action + " " + value + " : " + position.ToString() + " --- " + waypoint.ToString());
+            }
+
+            return (int)(Math.Abs(position.X) + (int)Math.Abs(position.Y));
+        }
+
+        static Vector rotateVectorAntiClockwise(Vector initial, int angle)
+        {
+            var newVector = new Vector(initial.X, initial.Y);
+            for (int i = 0; i < (angle / 90); i++)
+            {
+                newVector = new Vector(-newVector.Y, newVector.X);
+            }
+
+            return newVector;
+        }
+
+        static Vector rotateVectorLeft(Vector initial, int angle)
+        {
+            return rotateVectorAntiClockwise(initial, 360 - angle);
+        }
     }
 }
